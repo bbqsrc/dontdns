@@ -1,8 +1,8 @@
-use std::time::Duration;
+use std::{time::Duration, collections::HashMap};
 
 use poem::{
     handler, http::HeaderMap, listener::TcpListener, middleware::Tracing, post, Body, EndpointExt,
-    Route, Server,
+    Route, Server, get, web::Query,
 };
 
 #[tokio::main]
@@ -11,7 +11,7 @@ async fn main() -> eyre::Result<()> {
     tracing::info!("Hello, world!");
 
     let app = Route::new()
-        .at("/nic/update", post(nic_update))
+        .at("/nic/update", get(nic_update))
         .with(Tracing);
     Server::new(TcpListener::bind("0.0.0.0:10053"))
         .run_with_graceful_shutdown(
@@ -27,8 +27,8 @@ async fn main() -> eyre::Result<()> {
 }
 
 #[handler]
-async fn nic_update(body: Body, headers: &HeaderMap) {
+async fn nic_update(params: Query<HashMap<String, String>>, headers: &HeaderMap) {
     // format!("hello: {}", name)
-    let body_text = body.into_string().await.unwrap();
-    tracing::info!(body = body_text, headers = ?headers, "Hi");
+    // let body_text = body.into_string().await.unwrap();
+    tracing::info!(query = ?params, headers = ?headers, "Hi");
 }
